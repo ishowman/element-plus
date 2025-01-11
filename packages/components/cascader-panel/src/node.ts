@@ -1,6 +1,11 @@
 // @ts-nocheck
-import { isFunction } from '@vue/shared'
-import { capitalize, isEmpty, isUndefined } from '@element-plus/utils'
+import {
+  capitalize,
+  isArray,
+  isEmpty,
+  isFunction,
+  isUndefined,
+} from '@element-plus/utils'
 import type { VNode } from 'vue'
 
 export type CascaderNodeValue = string | number
@@ -73,8 +78,23 @@ class Node {
   children: Node[]
   text: string
   loaded: boolean
+  /**
+   * Is it checked
+   *
+   * @default false
+   */
   checked = false
+  /**
+   * Used to indicate the intermediate state of unchecked and fully checked child nodes
+   *
+   * @default false
+   */
   indeterminate = false
+  /**
+   * Loading Status
+   *
+   * @default false
+   */
   loading = false
 
   constructor(
@@ -118,7 +138,7 @@ class Node {
     return isUndefined(isLeaf)
       ? lazy && !loaded
         ? false
-        : !(Array.isArray(childrenData) && childrenData.length)
+        : !(isArray(childrenData) && childrenData.length)
       : !!isLeaf
   }
 
@@ -130,7 +150,7 @@ class Node {
     const { childrenData, children } = this
     const node = new Node(childData, this.config, this)
 
-    if (Array.isArray(childrenData)) {
+    if (isArray(childrenData)) {
       childrenData.push(childData)
     } else {
       this.childrenData = [childData]
