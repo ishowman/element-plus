@@ -9,7 +9,11 @@
       :ref="(item) => (menuList[index] = item)"
       :index="index"
       :nodes="[...menu]"
-    />
+    >
+      <template #empty>
+        <slot name="empty" />
+      </template>
+    </el-cascader-menu>
   </div>
 </template>
 
@@ -27,11 +31,11 @@ import {
   watch,
 } from 'vue'
 import { cloneDeep, flattenDeep, isEqual } from 'lodash-unified'
-import { isClient } from '@vueuse/core'
 import {
   castArray,
   focusNode,
   getSibling,
+  isClient,
   isEmpty,
   scrollIntoView,
   unique,
@@ -192,6 +196,9 @@ export default defineComponent({
     const clearCheckedNodes = () => {
       checkedNodes.value.forEach((node) => node.doCheck(false))
       calculateCheckedValue()
+      menus.value = menus.value.slice(0, 1)
+      expandingNode.value = null
+      emit('expand-change', [])
     }
 
     const calculateCheckedValue = () => {
@@ -262,8 +269,7 @@ export default defineComponent({
       }
 
       oldNodes.forEach((node) => node.doCheck(false))
-      newNodes.forEach((node) => node.doCheck(true))
-
+      reactive(newNodes).forEach((node) => node.doCheck(true))
       checkedNodes.value = newNodes
       nextTick(scrollToExpandingNode)
     }
@@ -318,6 +324,7 @@ export default defineComponent({
           break
         }
         case EVENT_CODE.enter:
+        case EVENT_CODE.numpadEnter:
           checkNode(target)
           break
       }
@@ -376,7 +383,13 @@ export default defineComponent({
       handleKeyDown,
       handleCheckChange,
       getFlattedNodes,
+      /**
+       * @description get an array of currently selected node,(leafOnly) whether only return the leaf checked nodes, default is `false`
+       */
       getCheckedNodes,
+      /**
+       * @description clear checked nodes
+       */
       clearCheckedNodes,
       calculateCheckedValue,
       scrollToExpandingNode,
